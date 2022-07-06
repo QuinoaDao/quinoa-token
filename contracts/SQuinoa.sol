@@ -21,13 +21,15 @@ contract SQuinoa is ISQuinoa, ERC20{
     // treasury에 qui 맡기면 sQui 민팅해줌 => treasury만 mint 가능
     function mint(address to, uint256 amount) external override onlyTreasury {
         _mint(to, amount);
+
+        emit Mint(to, amount);
     }
 
-    // account의 sQui를 amount만큼 소각(단, msg.sender에게 approve 되어 있어야 함)
-    // => burnable의 burnFrom과 같은 기능&로직
+    // account의 sQui를 amount만큼 소각
     function burn(address account, uint256 amount) external override onlyTreasury {
-        _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
+
+        emit Burn(account, amount);
     }
 
     // transfer 금지
