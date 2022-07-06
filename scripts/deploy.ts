@@ -15,7 +15,7 @@ async function main() {
 
   // We get the contract to deploy
   const Treasury = await ethers.getContractFactory("Treasury");
-  const treasury = await Treasury.deploy("Hi, treasury!");
+  const treasury = await Treasury.deploy();
   await treasury.deployed();
 
   const SQuinoa = await ethers.getContractFactory("SQuinoa");
