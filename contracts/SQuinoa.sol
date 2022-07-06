@@ -2,12 +2,10 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/utils/context.sol";
 
 import "./ISQuinoa.sol";
 
-contract SQuinoa is ISQuinoa, ERC20, ERC20Burnable, Context{
+contract SQuinoa is ISQuinoa, ERC20{
 
     address public immutable treasury; 
 
@@ -21,18 +19,15 @@ contract SQuinoa is ISQuinoa, ERC20, ERC20Burnable, Context{
     }
 
     // treasury에 qui 맡기면 sQui 민팅해줌 => treasury만 mint 가능
-    function mint(address to, uint256 amount) public onlyTreasury {
+    function mint(address to, uint256 amount) external override onlyTreasury {
         _mint(to, amount);
     }
 
-    // msg.sender(=> treasury)의 sQui를 amount만큼 소각
-    function burn(uint256 amount) public override onlyTreasury {
-        super.burn(amount);
-    }
-
     // account의 sQui를 amount만큼 소각(단, msg.sender에게 approve 되어 있어야 함)
-    function burnFrom(address account, uint256 amount) public override onlyTreasury {
-        super.burnFrom(account, amount);
+    // => burnable의 burnFrom과 같은 기능&로직
+    function burn(address account, uint256 amount) external override onlyTreasury {
+        _spendAllowance(account, _msgSender(), amount);
+        _burn(account, amount);
     }
 
     // transfer 금지
@@ -41,7 +36,8 @@ contract SQuinoa is ISQuinoa, ERC20, ERC20Burnable, Context{
         address to,
         uint256 amount
     ) internal override {
-        revert("sQui Token cannot transfer");
+        require(false, "sQuinao Token cannot transfer");
+        super._transfer(from, to, amount);
     }
 
 }

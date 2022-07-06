@@ -9,9 +9,7 @@ interface ISQuinoa is IERC20 {
 
     event Burn(address owner, uint256 amount);
 
-    function mint(address to, uint256 amount) public;
+    function mint(address to, uint256 amount) external;
 
-    function burn(uint256 amount) public;
-
-    function burnFrom(address account, uint256 amount) public;
+    function burn(address account, uint256 amount) external;
 }
