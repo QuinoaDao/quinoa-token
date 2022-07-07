@@ -61,6 +61,4 @@ describe("Qui Contract", async () =>{
 
         });
     });
-
-    describe
   });
