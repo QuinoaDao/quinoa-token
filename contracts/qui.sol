@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract Qui is ERC20, Ownable {
+contract Qui is ERC20, Ownable, ERC20Burnable {
 
     address public treasury;
     bytes32 public merkleRoot;
@@ -90,7 +90,8 @@ contract Qui is ERC20, Ownable {
     }
     
     function burn(address onBehalfOf, uint256 amount) external{
-        //_spendAllowance(onBehalfOf, msg.sender, amount);
+        _approve(onBehalfOf, msg.sender, amount);
+        _spendAllowance(onBehalfOf, msg.sender, amount);
         _burn(onBehalfOf, amount);
     }
 
