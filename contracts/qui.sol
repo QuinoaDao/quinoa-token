@@ -72,6 +72,13 @@ contract Qui is ERC20, Ownable {
         emit TaxUpdated(tax);
     }
 
+    function transfer( address sender,
+        address recipient,
+        uint256 amount
+    ) external{
+        _transfer(sender, recipient, amount);
+    }
+
     function _transfer(
         address sender,
         address recipient,
@@ -80,5 +87,11 @@ contract Qui is ERC20, Ownable {
         uint256 taxAmount= (amount*tax)/1000;
         super._transfer(sender,treasury,taxAmount);
         super._transfer(sender,recipient,(amount - taxAmount));
-        }
     }
+    
+    function burn(address onBehalfOf, uint256 amount) external{
+        //_spendAllowance(onBehalfOf, msg.sender, amount);
+        _burn(onBehalfOf, amount);
+    }
+
+}
