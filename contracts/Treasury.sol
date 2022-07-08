@@ -16,6 +16,10 @@ contract Treasury is ITreasury, Ownable {
         sQui = ISQuinoa(_sQui);
     }
 
+    function getAsset() public view returns(address, address) {
+        return (address(qui), address(sQui));
+    }
+    
     // deposit(staking) => qui를 staking하고 sQui를 그 만큼 민팅 받음
     // -> 우선, user가 Treasury contract에게 미리 approve를 해 놓아야 함
     // 여러 페이지 봐봤는데, 보통 deposit 하기 전에 따로 approve를 해주더라구 ~ 
