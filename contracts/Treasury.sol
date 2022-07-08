@@ -17,11 +17,14 @@ contract Treasury is ITreasury, Ownable {
     }
 
     // deposit(staking) => qui를 staking하고 sQui를 그 만큼 민팅 받음
-    function deposit(address user, uint256 amount) external override {
-        qui.transfer(address(this), amount); // msg.sender -(qui)-> treasury
-        sQui.mint(user, amount); // 0x0 -(sQui)-> user
+    // -> 우선, user가 Treasury contract에게 미리 approve를 해 놓아야 함
+    // 여러 페이지 봐봤는데, 보통 deposit 하기 전에 따로 approve를 해주더라구 ~ 
+    // 그래서 우리도 그렇게 화면에 미리 approve를 해 주고, deposit 할 수 있게 해둬야 할 듯
+    function deposit(uint256 amount) external override {
+        qui.transferFrom(_msgSender(), address(this), amount); // user -(qui)-> treasury
+        sQui.mint(_msgSender(), amount); // 0x0 -(sQui)-> user
 
-        emit Deposit(user, amount);
+        emit Deposit(_msgSender(), amount);
     }
 
     // sQui를 amount만큼 burn 하고, 그 만큼 qui를 돌려줌
@@ -29,8 +32,7 @@ contract Treasury is ITreasury, Ownable {
         require(sQui.balanceOf(_msgSender()) >= amount, "Treasury: withdraw amount exceeds sQui balance");
         
         sQui.burn(_msgSender(), amount); // msg.sender() -(sQui)-> 0x0
-        qui.approve(_msgSender(), amount); // withdraw를 호출한 사람에게 이 contract의 qui를 approve
-        qui.transferFrom(address(this), _msgSender(), amount); // treasury -(qui)-> msg.sender
+        qui.transfer(_msgSender(), amount); // treasury -(qui)-> msg.sender
         
         emit Withdraw(_msgSender(), amount);
     }

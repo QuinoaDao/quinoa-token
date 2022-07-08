@@ -26,6 +26,7 @@ contract SQuinoa is ISQuinoa, ERC20{
     }
 
     // account의 sQui를 amount만큼 소각
+    // approve가 있어야 하지 않나하는 의견 ?!
     function burn(address account, uint256 amount) external override onlyTreasury {
         _burn(account, amount);
 

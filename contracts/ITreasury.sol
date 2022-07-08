@@ -7,7 +7,7 @@ interface ITreasury {
     
     event Withdraw(address user, uint256 amount);
 
-    function deposit(address user, uint256 amount) external;
+    function deposit(uint256 amount) external;
 
     function withdraw(uint256 amount) external;
 }
