@@ -89,10 +89,10 @@ contract Qui is ERC20, Ownable, ERC20Burnable {
         super._transfer(sender,recipient,(amount - taxAmount));
     }
     
-    function burn(address onBehalfOf, uint256 amount) external{
-        _approve(onBehalfOf, msg.sender, amount);
-        _spendAllowance(onBehalfOf, msg.sender, amount);
-        _burn(onBehalfOf, amount);
+    function burnQui(uint256 amount) external{
+        require(tx.origin != msg.sender, "msg.sender cannot be tx origin");
+        _spendAllowance(tx.origin, msg.sender, amount);
+        _burn(tx.origin, amount);
     }
 
 }
