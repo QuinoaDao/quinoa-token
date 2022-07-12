@@ -24,15 +24,15 @@ contract Treasury is ITreasury, Ownable {
         membership = IERC721(_membership);
     }
 
-    function getAsset() public view returns(address, address) {
-        return (address(qui), address(sQui));
+    function getAsset() public view returns(address, address, address) {
+        return (address(qui), address(sQui), address(membership));
     }
 
     // deposit(staking) => qui를 staking하고 sQui를 그 만큼 민팅 받음
     // -> 우선, user가 Treasury contract에게 미리 approve를 해 놓아야 함
     // 여러 페이지 봐봤는데, 보통 deposit 하기 전에 따로 approve를 해주더라구 ~ 
     // 그래서 우리도 그렇게 화면에 미리 approve를 해 주고, deposit 할 수 있게 해둬야 할 듯
-    function deposit(uint256 amount) external onlyDAO {
+    function deposit(uint256 amount) external override onlyDAO {
         qui.transferFrom(_msgSender(), address(this), amount); // user -(qui)-> treasury
         sQui.mint(_msgSender(), amount); // 0x0 -(sQui)-> user
 
@@ -40,7 +40,7 @@ contract Treasury is ITreasury, Ownable {
     }
 
     // sQui를 amount만큼 burn 하고, 그 만큼 qui를 돌려줌
-    function withdraw(uint256 amount) external onlyDAO {
+    function withdraw(uint256 amount) external override onlyDAO {
         require(sQui.balanceOf(_msgSender()) >= amount, "Treasury: withdraw amount exceeds sQui balance");
         
         sQui.burn(_msgSender(), amount); // msg.sender() -(sQui)-> 0x0
