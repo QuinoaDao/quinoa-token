@@ -83,10 +83,16 @@ contract Qui is ERC20, Ownable, ERC20Burnable {
         address sender,
         address recipient,
         uint256 amount
-    ) internal virtual override{      
-        uint256 taxAmount= (amount*tax)/1000;
-        super._transfer(sender,treasury,taxAmount);
-        super._transfer(sender,recipient,(amount - taxAmount));
+    ) internal virtual override{   
+        if (sender == treasury || recipient == treasury)
+            super._transfer(sender, recipient, amount);
+        else{
+            uint256 taxAmount= (amount*tax)/1000;
+            // treasury 에 tax 보내기
+            super._transfer(sender,treasury,taxAmount);
+            // tax를 제외한 amount 만큼 보내기 
+            super._transfer(sender,recipient,(amount - taxAmount));
+        } 
     }
     
     function burnQui(uint256 amount) external{

@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 import "./QuinoaNFT.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-contract GuruNFT is QuinoaNFT {
+contract GuruNFT is QuinoaNFT{
     error SoulBound();
 
     mapping(address => bool) public WhitelistClaimed;
@@ -29,6 +30,14 @@ contract GuruNFT is QuinoaNFT {
         WhitelistClaimed[msg.sender] = true;
         safeMint(claiming);
     }
+
+    function getTokenId(address owner) public view returns(uint256) {
+      return tokenOfOwnerByIndex(owner, 0);
+    }
+
+    // function getTokenId(address owner, uint256 index) public view  returns (uint256) {
+    //     return tokenOfOwnerByIndex(owner, 0);
+    // }
 
     /// --- Disabling Transfer Of Soulbound NFT --- ///
 
@@ -56,7 +65,7 @@ contract GuruNFT is QuinoaNFT {
     address, 
     address, 
     uint256
-  ) public pure override {
+  ) public pure override{
     revert SoulBound();
   }
 
