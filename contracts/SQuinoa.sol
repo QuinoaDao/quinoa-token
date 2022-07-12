@@ -2,38 +2,58 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
 import "./ISQuinoa.sol";
 
+/**
+ * @title Staked Quinoa Token
+ * @notice Staked Quinoa Token implementation
+ * This token is proof of staking the qui tokens
+ **/
 contract SQuinoa is ISQuinoa, ERC20{
 
     address public immutable treasury; 
 
+    /**
+     * @dev Constructor
+     * @param _treasury The address of the Treasury contract
+     */
     constructor(address _treasury) ERC20("sQuinoa", "sQui") {
         treasury = _treasury;
     }
 
+    /**
+     * @dev only the Treasury contract can call functions marked by this modifier
+     */
     modifier onlyTreasury() {
         require(treasury == _msgSender(), "onlyTreasury: caller is not the Treasury");
         _;
     }
 
-    // treasury에 qui 맡기면 sQui 민팅해줌 => treasury만 mint 가능
+    /**
+     * @dev Mint sQui token for proof of staking
+     * @param to The receipient address 
+     * @param amount The amount of the sQui tokens to mint
+     */
     function mint(address to, uint256 amount) external override onlyTreasury {
         _mint(to, amount);
 
         emit Mint(to, amount);
     }
 
-    // account의 sQui를 amount만큼 소각
-    // approve가 있어야 하지 않나하는 의견 ?!
-    function burn(address account, uint256 amount) external override onlyTreasury {
-        _burn(account, amount);
+    /**
+     * @dev Burn sQui token because sQui is withdrawed in treasury
+     * @param from The address who have sQui to burn
+     * @param amount The amount of the sQui tokens to burn
+     */
+    function burn(address from, uint256 amount) external override onlyTreasury {
+        _burn(from, amount);
 
-        emit Burn(account, amount);
+        emit Burn(from, amount);
     }
 
-    // transfer 금지
+    /**
+     * @dev sQui cannot trasfer
+     */
     function _transfer(
         address from,
         address to,

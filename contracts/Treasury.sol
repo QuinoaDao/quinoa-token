@@ -7,31 +7,46 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-
+/**
+ * @title Treasury
+ * @notice Treasury(for staking) implementation
+ */
 contract Treasury is ITreasury, Ownable {
     IERC20 public qui;
     ISQuinoa public sQui;
     IERC721 public membership;
 
+    /**
+     * @dev Only DAO members can call functions marked by this modifier
+     */
     modifier onlyDAO {
         require(membership.balanceOf(_msgSender()) > 0 , "onlyDAO: caller is not a DAO member");
         _;
     }
 
+    /**
+     * @dev Set assets(qui, sQui, NFTmembership) in treasury
+     * qui token and sQui token is using for staking
+     * membership NFT is using for checking who is DAO members
+     */
     function setAsset(address _qui, address _sQui, address _membership) public onlyOwner {
         qui = IERC20(_qui);
         sQui = ISQuinoa(_sQui);
         membership = IERC721(_membership);
     }
 
+    /**
+     * @notice Get assets in treasury 
+     * This function return addresses about assets
+     */
     function getAsset() public view returns(address, address, address) {
         return (address(qui), address(sQui), address(membership));
     }
 
-    // deposit(staking) => qui를 staking하고 sQui를 그 만큼 민팅 받음
-    // -> 우선, user가 Treasury contract에게 미리 approve를 해 놓아야 함
-    // 여러 페이지 봐봤는데, 보통 deposit 하기 전에 따로 approve를 해주더라구 ~ 
-    // 그래서 우리도 그렇게 화면에 미리 approve를 해 주고, deposit 할 수 있게 해둬야 할 듯
+    /**
+     * @notice Deposit the qui tokens and get sQui token for the proof of staking
+     * @param amount Amount of the qui tokens to stake in this treasury
+     */
     function deposit(uint256 amount) external override onlyDAO {
         qui.transferFrom(_msgSender(), address(this), amount); // user -(qui)-> treasury
         sQui.mint(_msgSender(), amount); // 0x0 -(sQui)-> user
@@ -39,7 +54,10 @@ contract Treasury is ITreasury, Ownable {
         emit Deposit(_msgSender(), amount);
     }
 
-    // sQui를 amount만큼 burn 하고, 그 만큼 qui를 돌려줌
+    /**
+     * @notice Withdraw the qui tokens and burn the sQui tokens 
+     * @param amount Amount of the qui tokens to withdraw in this treasury
+     */
     function withdraw(uint256 amount) external override onlyDAO {
         require(sQui.balanceOf(_msgSender()) >= amount, "Treasury: withdraw amount exceeds sQui balance");
         
