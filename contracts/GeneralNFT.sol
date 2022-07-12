@@ -17,14 +17,21 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
     uint256 public nftPrice;
     address public qui;
     address public treasury;
+    address public royaltyFeeToken;
     string public contractURI;
 
-    constructor ( uint256 _nftPrice, uint96 _royaltyFeeNumerator, address _treasury)
-    ERC721("Quinoa-General", "GENERAL"){
+    RoyaltyInfo private _defaultRoyaltyInfo;
+
+    constructor ( 
+        uint256 _nftPrice, 
+        uint96 _royaltyFeeNumerator, 
+        address _treasury,
+        address _royaltyFeeToken 
+    ) ERC721("Quinoa-General", "GENERAL"){
         nftPrice = _nftPrice;
         treasury = _treasury;
         setRoyaltyInfo(treasury, _royaltyFeeNumerator);
-        
+        royaltyFeeToken = _royaltyFeeToken;
     }
 
     function hasRole(address addr) public view override returns (bool){
@@ -52,11 +59,12 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
     function transferFrom(
         address from, 
         address to, 
-        uint256 tokenId)
+        uint256 tokenId
+        )
         public override {
             require(
-                _isApprovedOrOwner(_msgSender(), tokenId, 
-                'ERC721: transfer caller is not approved nor owner')
+                _isApprovedOrOwner(_msgSender(), tokenId),
+                "transfer caller is not approved nor owner"
             );
             _payRoyaltyFee(from);
             _transfer(from, to, tokenId);
@@ -65,14 +73,14 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
     function safeTransferFrom(
         address from, 
         address to, 
-        uint256 tokenId,)
+        uint256 tokenId)
         public override {
             require(
-                _isApprovedOrOwner(_msgSender(), tokenId, 
-                'ERC721: transfer caller is not approved nor owner');
-            )
+                _isApprovedOrOwner(_msgSender(), tokenId), 
+                "transfer caller is not approved nor owner"
+            );
             _payRoyaltyFee(from);
-            safeTransfer(from, to, tokenId, '');
+            safeTransferFrom(from, to, tokenId, "");
     }
 
     function safeTransferFrom(
@@ -82,12 +90,11 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
         bytes memory _data)
         public override {
             require(
-                _isApprovedOrOwner(_msgSender(), tokenId, 
-                'ERC721: transfer caller is not approved nor owner');
-            )
-            // who pays the royalty fee?
-            _payRoyaltyFee(from);
-            _safeTransfer(from, to, tokenId, data);
+                _isApprovedOrOwner(_msgSender(), tokenId), 
+                "transfer caller is not approved nor owner"
+            );
+            
+            _safeTransfer(from, to, tokenId, _data);
     }
     
 
@@ -118,11 +125,11 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
     }
 
     function _payRoyaltyFee(address from) internal {
-        IERC20 token = IERC20(txFeeToken);
+        IERC20 token = IERC20(royaltyFeeToken);
         token.transferFrom(
             from, 
             _defaultRoyaltyInfo.receiver,
-            _defaultRoyaltyInfo.royaltyFraction
+            (nftPrice * _defaultRoyaltyInfo.royaltyFraction)
             );
     }
 }
