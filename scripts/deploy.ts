@@ -1,25 +1,36 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `npx hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
+const keccak256 = require('keccak256')
+const { MerkleTree } = require('merkletreejs')
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
-
   // We get the contract to deploy
-  const Greeter = await ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
 
-  await greeter.deployed();
+  // qui
+  let signers = await ethers.getSigners();
+  let accounts = signers.map(signer => signer.address);
+  const leaves = accounts.map(account => keccak256(account));
+  const tree = new MerkleTree(leaves, keccak256, {sortPairs: true});
+  const root = tree.getRoot();
 
-  console.log("Greeter deployed to:", greeter.address);
+  const Quinoa = await ethers.getContractFactory("Qui");
+  const quinoa = await Quinoa.deploy(4,root);
+  await quinoa.deployed();
+
+  // treasury
+  const Treasury = await ethers.getContractFactory("Treasury");
+  const treasury = await Treasury.deploy();
+  await treasury.deployed();
+
+  // sQui
+  const SQuinoa = await ethers.getContractFactory("SQuinoa");
+  const sQuinoa = await SQuinoa.deploy(treasury.address);
+  await sQuinoa.deployed();
+
+  // membership NFT
+  const NFT= await ethers.getContractFactory("EntranceNFT");
+  const nft = await NFT.deploy("Example", "EX", root, 100);
+  await nft.deployed();
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
