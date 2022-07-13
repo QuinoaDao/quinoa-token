@@ -55,49 +55,7 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
         IQui(qui).burn(msg.sender, nftPrice);
         safeMint(msg.sender);
     }
-
-    function transferFrom(
-        address from, 
-        address to, 
-        uint256 tokenId
-        )
-        public override {
-            require(
-                _isApprovedOrOwner(_msgSender(), tokenId),
-                "transfer caller is not approved nor owner"
-            );
-            _payRoyaltyFee(from);
-            _transfer(from, to, tokenId);
-    }
-
-    function safeTransferFrom(
-        address from, 
-        address to, 
-        uint256 tokenId)
-        public override {
-            require(
-                _isApprovedOrOwner(_msgSender(), tokenId), 
-                "transfer caller is not approved nor owner"
-            );
-            _payRoyaltyFee(from);
-            safeTransferFrom(from, to, tokenId, "");
-    }
-
-    function safeTransferFrom(
-        address from, 
-        address to, 
-        uint256 tokenId,
-        bytes memory _data)
-        public override {
-            require(
-                _isApprovedOrOwner(_msgSender(), tokenId), 
-                "transfer caller is not approved nor owner"
-            );
-            
-            _safeTransfer(from, to, tokenId, _data);
-    }
     
-
     function setRoyaltyInfo(address _receiver, uint96 _royaltyFees) public onlyOwner {
         _setDefaultRoyalty(_receiver, _royaltyFees);
     }
@@ -124,13 +82,14 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-    function _payRoyaltyFee(address from) internal {
-        IERC20 token = IERC20(royaltyFeeToken);
-        token.transferFrom(
-            from, 
+    // 해당 토큰의 로열티 정보가 모두 동일하므로 defaultRoyaltyInfo 를 return
+    function getRoyaltyInfo(uint256 _salePrice) 
+    external view 
+    returns(address, uint256) {
+        return (
             _defaultRoyaltyInfo.receiver,
-            (nftPrice * _defaultRoyaltyInfo.royaltyFraction)
-            );
+            _salePrice * _defaultRoyaltyInfo.royaltyFraction
+        );
     }
 }
 
