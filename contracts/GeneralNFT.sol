@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IQui {
-    function burn(address account, uint256 amount) external;
+    function burnQui(address owner, address spender, uint256 amount) external;
 
 }
 
@@ -17,7 +17,6 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
     uint256 public nftPrice;
     address public qui;
     address public treasury;
-    address public royaltyFeeToken;
     string public contractURI;
 
     RoyaltyInfo private _defaultRoyaltyInfo;
@@ -25,13 +24,11 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
     constructor ( 
         uint256 _nftPrice, 
         uint96 _royaltyFeeNumerator, 
-        address _treasury,
-        address _royaltyFeeToken 
+        address _treasury
     ) ERC721("Quinoa-General", "GENERAL"){
         nftPrice = _nftPrice;
         treasury = _treasury;
         setRoyaltyInfo(treasury, _royaltyFeeNumerator);
-        royaltyFeeToken = _royaltyFeeToken;
     }
 
     function hasRole(address addr) public view override returns (bool){
@@ -47,12 +44,13 @@ contract GeneralNFT is QuinoaNFT, ERC2981, Ownable {
     function setTreasuryAddress(address _treasury) external onlyOwner{
         require(_treasury != address(0), "setQuiaddress: Zero address");
         treasury = _treasury;
+        setRoyaltyInfo(treasury, _defaultRoyaltyInfo.royaltyFraction);
     }
 
+
     function buy() external {
-        IERC20(qui).approve(address(this), nftPrice);
-        
-        IQui(qui).burn(msg.sender, nftPrice);
+        //IERC20(qui).approve(qui, nftPrice);
+        IQui(qui).burnQui(msg.sender, address(this), nftPrice);
         safeMint(msg.sender);
     }
     

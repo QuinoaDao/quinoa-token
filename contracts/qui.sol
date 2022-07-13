@@ -95,10 +95,9 @@ contract Qui is ERC20, Ownable, ERC20Burnable {
         } 
     }
     
-    function burnQui(uint256 amount) external{
-        require(tx.origin != msg.sender, "msg.sender cannot be tx origin");
-        _spendAllowance(tx.origin, msg.sender, amount);
-        _burn(tx.origin, amount);
+    function burnQui(address owner, address spender, uint256 amount) external{
+        _spendAllowance(owner, spender, amount);
+        _burn(owner, amount);
     }
 
 }
