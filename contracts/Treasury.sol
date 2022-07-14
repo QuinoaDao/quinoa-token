@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "./ITreasury.sol";
-import "./ISQuinoa.sol";
+import "./interfaces/ITreasury.sol";
+import "./interfaces/ISQuinoa.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -14,13 +14,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Treasury is ITreasury, Ownable {
     IERC20 public qui;
     ISQuinoa public sQui;
-    IERC721 public membership;
+    IERC721 public generalMembership;
+    IERC721 public guruMembership;
 
     /**
      * @dev Only DAO members can call functions marked by this modifier
      */
     modifier onlyDAO {
-        require(membership.balanceOf(_msgSender()) > 0 , "onlyDAO: caller is not a DAO member");
+        require(guruMembership.balanceOf(_msgSender()) > 0 || generalMembership.balanceOf(_msgSender()) > 0, 
+                "onlyDAO: caller is not a DAO member");
         _;
     }
 
@@ -29,18 +31,19 @@ contract Treasury is ITreasury, Ownable {
      * qui token and sQui token is using for staking
      * membership NFT is using for checking who is DAO members
      */
-    function setAsset(address _qui, address _sQui, address _membership) public onlyOwner {
+    function setAsset(address _qui, address _sQui, address _general, address _guru) public onlyOwner {
         qui = IERC20(_qui);
         sQui = ISQuinoa(_sQui);
-        membership = IERC721(_membership);
+        guruMembership = IERC721(_guru);
+        generalMembership = IERC721(_general);
     }
 
     /**
      * @notice Get assets in treasury 
      * This function return addresses about assets
      */
-    function getAsset() public view returns(address, address, address) {
-        return (address(qui), address(sQui), address(membership));
+    function getAsset() public view returns(address, address, address, address) {
+        return (address(qui), address(sQui), address(generalMembership), address(guruMembership));
     }
 
     /**
