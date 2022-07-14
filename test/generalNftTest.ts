@@ -40,7 +40,7 @@ async function deployContracts(quiOwner:Signer, treasuryOwner:Signer, nftOwner:S
 
 describe("GeneralNFT", function () {
   describe("Buy NFT", async () => {
-    it.only("buy nft and qui is burned", async () => {
+    it("buy nft and qui is burned", async () => {
       const [quiOwner, treasuryOwner, nftOwner, user1, user2] = await ethers.getSigners();
       const {qui, nft} = await deployContracts(quiOwner, treasuryOwner, nftOwner);
 
